@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/Royal17x/go-url-shortener/internal/pb"
+	"github.com/Royal17x/go-url-shortener/internal/service"
 	"github.com/Royal17x/go-url-shortener/internal/storage"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/crypto/bcrypt"
@@ -19,37 +20,14 @@ import (
 
 type AuthServer struct {
 	pb.UnimplementedAuthServiceServer
-	Store *storage.Storage
+	auth *service.AuthService
 }
 
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	if req.Username == "" || req.Email == "" || req.Password == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "имя, почта и пароль пользователя необходимы")
-	}
-
-	existingUser, err := s.Store.GetUserByEmail(ctx, req.Email)
+	uid, err := s.auth.Register(ctx, req.Username, req.Email, req.Password)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "ошибка БД: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "ошибка регистрации:%v", err)
 	}
-
-	if existingUser != nil {
-		return nil, status.Errorf(codes.AlreadyExists, "пользователь с почтой:%s уже существует ", req.Email)
-	}
-
-	hashedPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "не удалось захэшировать пароль:%v", err)
-	}
-
-	uid, err := s.Store.CreateUser(ctx, storage.User{
-		Username: req.Username,
-		Email:    req.Email,
-		Password: string(hashedPass),
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "не удалось создать пользователя в БД:%v", err)
-	}
-
 	return &pb.RegisterResponse{UserID: strconv.Itoa(uid)}, nil
 }
 

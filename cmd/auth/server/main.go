@@ -8,9 +8,11 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Royal17x/go-url-shortener/internal/auth"
 	"github.com/Royal17x/go-url-shortener/internal/pb"
 	"github.com/Royal17x/go-url-shortener/internal/service"
 	"github.com/Royal17x/go-url-shortener/internal/storage"
+	"github.com/Royal17x/go-url-shortener/internal/validation"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
@@ -24,6 +26,16 @@ type AuthServer struct {
 }
 
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	if !validation.ValidateUsername(req.Username) {
+		return nil, status.Errorf(codes.InvalidArgument, "некорректное имя пользователя")
+	}
+	if !validation.ValidateEmail(req.Email) {
+		return nil, status.Errorf(codes.InvalidArgument, "некорректная почта пользователя")
+	}
+	if !validation.ValidatePassword(req.Password) {
+		return nil, status.Errorf(codes.InvalidArgument, "некорректный пароль пользователя")
+	}
+
 	uid, err := s.auth.Register(ctx, req.Username, req.Email, req.Password)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "ошибка регистрации:%v", err)
@@ -41,13 +53,22 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 		return nil, status.Errorf(codes.Internal, "ошибка БД: %v", err)
 	}
 	if existingUser == nil {
-		return nil, status.Errorf(codes.AlreadyExists, "пользователя с почтой:%s не существует", req.Email)
+		return nil, status.Errorf(codes.NotFound, "пользователя с почтой:%s не существует", req.Email)
+	}
+	if err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(req.Password)); err != nil {
+		fmt.Printf("DEBUG логин: сохраненный хэш = %s\n", existingUser.Password)
+		fmt.Printf("DEBUG Login: пароль при вводе = %s\n", req.Password)
+		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(req.Password)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
 	}
+	token, err := auth.GenerateToken(existingUser.ID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "ошибка генерации токена:%v", err)
+	}
 	return &pb.LoginResponse{
-		Token: "someJWTtoken",
+		Token: token,
 	}, nil
 }
 

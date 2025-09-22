@@ -26,14 +26,13 @@ func (s *Storage) CreateUser(ctx context.Context, u User) (int, error) {
 }
 
 func (s *Storage) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-	query := `SELECT id, username, email, password_hash FROM users WHERE email = $1`
+	row := s.DB.QueryRowContext(ctx,
+		`SELECT id, username, email, password_hash FROM users WHERE email = $1`, email)
 	u := User{}
-	err := s.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Username, &u.Email, &u.Password)
-	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("Пользователь не найден: %v", err)
-	}
-	if err != nil {
-		return nil, fmt.Errorf("Ошибка поиска пользователя: %v", err)
+	if err := row.Scan(&u.ID, &u.Username, &u.Email, &u.Password); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 	}
 	return &u, nil
 }

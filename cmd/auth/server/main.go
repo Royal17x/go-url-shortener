@@ -36,7 +36,7 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 	if req.Username == "" || req.Email == "" || req.Password == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "имя, почта и пароль пользователя необходимы")
 	}
-	existingUser, err := s.Store.GetUserByEmail(ctx, req.Email)
+	existingUser, err := s.auth.Store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "ошибка БД: %v", err)
 	}
@@ -62,9 +62,9 @@ func main() {
 		log.Fatalf("не удалось подключиться к БД:%v", err)
 	}
 	defer store.DB.Close()
-
+	authService := service.NewAuthService(store)
 	grpcServer := grpc.NewServer()
-	pb.RegisterAuthServiceServer(grpcServer, &AuthServer{Store: store})
+	pb.RegisterAuthServiceServer(grpcServer, &AuthServer{auth: authService})
 
 	listener, err := net.Listen("tcp", ":50051")
 	if err != nil {

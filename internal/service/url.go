@@ -23,9 +23,9 @@ func generateShortCode() string {
 	return strings.TrimRight(base64.URLEncoding.EncodeToString(b), "=")
 }
 
-func (s *URLService) Shorten(ctx context.Context, userID int, originalURL string) (string, error) {
+func (s *URLService) ShortenURL(ctx context.Context, userID int, originalURL string) (string, error) {
 	code := generateShortCode()
-	_, err := s.Store.CreateURL(ctx, storage.URL{
+	_, err := s.Store.SaveURL(ctx, storage.URL{
 		UserID:      userID,
 		ShortCode:   code,
 		OriginalURL: originalURL,
@@ -34,4 +34,12 @@ func (s *URLService) Shorten(ctx context.Context, userID int, originalURL string
 		return "", err
 	}
 	return code, nil
+}
+
+func (s *URLService) ResolveURL(ctx context.Context, shortCode string) (string, error) {
+	url, err := s.Store.GetURL(ctx, shortCode)
+	if err != nil {
+		return "", err
+	}
+	return url.OriginalURL, nil
 }

@@ -25,6 +25,11 @@ type AuthServer struct {
 	auth *service.AuthService
 }
 
+type URLServer struct {
+	pb.UnimplementedAuthServiceServer
+	urlService *service.URLService
+}
+
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	if !validation.ValidateUsername(req.Username) {
 		return nil, status.Errorf(codes.InvalidArgument, "некорректное имя пользователя")
@@ -70,18 +75,20 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 	}, nil
 }
 
-func (s *AuthServer) Shorten(ctx context.Context, req *pb.ShortenRequest) (*pb.ShortenResponse, error) {
-	userID, err := auth.ParseToken(req.Token)
+func (s *URLServer) ShortenURL(ctx context.Context, req *pb.ShortenURLRequest) (*pb.ShortenURLResponse, error) {
+	shortCode, err := s.urlService.ShortenURL(ctx, int(req.UserId), req.OriginalUrl)
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "невалидный токен: %v", err)
+		return nil, status.Errorf(codes.Internal, "ошибка при сохранении URL: %v", err)
 	}
+	return &pb.ShortenURLResponse{ShortCode: shortCode}, nil
+}
 
-	shortCode, err := s.auth.URLService.Shorten(ctx, userID, req.Url)
+func (s *URLServer) ResolveURL(ctx context.Context, req *pb.ResolveURLRequest) (*pb.ResolveURLResponse, error) {
+	original, err := s.urlService.ResolveURL(ctx, req.ShortCode)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "ошибка сокращения: %v", err)
+		return nil, status.Errorf(codes.NotFound, "короткий код не найден:%v", err)
 	}
-	shortURL := fmt.Sprintf("http://localhost:8080/%s", shortCode)
-	return &pb.ShortenResponse{ShortUrl: shortURL}, nil
+	return &pb.ResolveURLResponse{OriginalUrl: original}, nil
 }
 
 func main() {
@@ -96,9 +103,10 @@ func main() {
 	}
 	defer store.DB.Close()
 	authService := service.NewAuthService(store)
+	urlService := service.NewURLService(store)
 	grpcServer := grpc.NewServer()
 	pb.RegisterAuthServiceServer(grpcServer, &AuthServer{auth: authService})
-
+	pb.RegisterAuthServiceServer(grpcServer, &URLServer{urlService: urlService})
 	listener, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("Ошибка в создании listener:%v", err)

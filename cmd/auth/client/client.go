@@ -18,6 +18,7 @@ func main() {
 	defer conn.Close()
 
 	client := pb.NewAuthServiceClient(conn)
+	urlClient := pb.NewURLServiceClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -43,6 +44,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("Не удалось получить ответ на Login Request: %v", err)
 	}
-
 	log.Printf("Login Response: token=%v", loginResp.Token)
+
+	shortResp, err := urlClient.ShortenURL(ctx, &pb.ShortenURLRequest{
+		UserId:      2,
+		OriginalUrl: "https://github.com/Royal17x",
+	})
+	if err != nil {
+		log.Fatalf("не удалось восстановить ссылку:%v", err)
+	}
+	log.Printf("Short URL:%s", shortResp.ShortCode)
+
+	resolveResp, err := urlClient.ResolveURL(ctx, &pb.ResolveURLRequest{ShortCode: shortResp.ShortCode})
+	if err != nil {
+		log.Fatalf("не удалось восстановить ссылку:%v", err)
+	}
+	log.Printf("Original URL:%s", resolveResp.OriginalUrl)
 }

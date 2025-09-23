@@ -229,102 +229,6 @@ func (x *LoginResponse) GetToken() string {
 	return ""
 }
 
-type ShortenRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ShortenRequest) Reset() {
-	*x = ShortenRequest{}
-	mi := &file_auth_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ShortenRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ShortenRequest) ProtoMessage() {}
-
-func (x *ShortenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_auth_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ShortenRequest.ProtoReflect.Descriptor instead.
-func (*ShortenRequest) Descriptor() ([]byte, []int) {
-	return file_auth_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *ShortenRequest) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-func (x *ShortenRequest) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-type ShortenResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ShortUrl      string                 `protobuf:"bytes,1,opt,name=short_url,json=shortUrl,proto3" json:"short_url,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ShortenResponse) Reset() {
-	*x = ShortenResponse{}
-	mi := &file_auth_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ShortenResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ShortenResponse) ProtoMessage() {}
-
-func (x *ShortenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_auth_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ShortenResponse.ProtoReflect.Descriptor instead.
-func (*ShortenResponse) Descriptor() ([]byte, []int) {
-	return file_auth_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *ShortenResponse) GetShortUrl() string {
-	if x != nil {
-		return x.ShortUrl
-	}
-	return ""
-}
-
 var File_auth_proto protoreflect.FileDescriptor
 
 const file_auth_proto_rawDesc = "" +
@@ -342,16 +246,10 @@ const file_auth_proto_rawDesc = "" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\"%\n" +
 	"\rLoginResponse\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"8\n" +
-	"\x0eShortenRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\x12\x10\n" +
-	"\x03url\x18\x02 \x01(\tR\x03url\".\n" +
-	"\x0fShortenResponse\x12\x1b\n" +
-	"\tshort_url\x18\x01 \x01(\tR\bshortUrl2\xa6\x01\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token2r\n" +
 	"\vAuthService\x125\n" +
 	"\bRegister\x12\x13.pb.RegisterRequest\x1a\x14.pb.RegisterResponse\x12,\n" +
-	"\x05Login\x12\x10.pb.LoginRequest\x1a\x11.pb.LoginResponse\x122\n" +
-	"\aShorten\x12\x12.pb.ShortenRequest\x1a\x13.pb.ShortenResponseB6Z4github.com/Royal17x/go-url-shortener/internal/pb/;pbb\x06proto3"
+	"\x05Login\x12\x10.pb.LoginRequest\x1a\x11.pb.LoginResponseB6Z4github.com/Royal17x/go-url-shortener/internal/pb/;pbb\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -365,24 +263,20 @@ func file_auth_proto_rawDescGZIP() []byte {
 	return file_auth_proto_rawDescData
 }
 
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_auth_proto_goTypes = []any{
 	(*RegisterRequest)(nil),  // 0: pb.RegisterRequest
 	(*RegisterResponse)(nil), // 1: pb.RegisterResponse
 	(*LoginRequest)(nil),     // 2: pb.LoginRequest
 	(*LoginResponse)(nil),    // 3: pb.LoginResponse
-	(*ShortenRequest)(nil),   // 4: pb.ShortenRequest
-	(*ShortenResponse)(nil),  // 5: pb.ShortenResponse
 }
 var file_auth_proto_depIdxs = []int32{
 	0, // 0: pb.AuthService.Register:input_type -> pb.RegisterRequest
 	2, // 1: pb.AuthService.Login:input_type -> pb.LoginRequest
-	4, // 2: pb.AuthService.Shorten:input_type -> pb.ShortenRequest
-	1, // 3: pb.AuthService.Register:output_type -> pb.RegisterResponse
-	3, // 4: pb.AuthService.Login:output_type -> pb.LoginResponse
-	5, // 5: pb.AuthService.Shorten:output_type -> pb.ShortenResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	1, // 2: pb.AuthService.Register:output_type -> pb.RegisterResponse
+	3, // 3: pb.AuthService.Login:output_type -> pb.LoginResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -399,7 +293,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

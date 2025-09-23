@@ -8,6 +8,7 @@ option go_package = "github.com/Royal17x/go-url-shortener/internal/pb/;pb";
 service AuthService {
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Shorten(ShortenRequest) returns (ShortenResponse);
 }
 
 message RegisterRequest {
@@ -28,4 +29,13 @@ message LoginRequest {
 
 message LoginResponse {
     string token = 1;
+}
+
+message ShortenRequest {
+    string token = 1;
+    string url = 2;
+}
+
+message ShortenResponse {
+    string short_url = 1;
 }

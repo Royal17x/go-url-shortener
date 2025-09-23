@@ -22,17 +22,17 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	registerResp, err := client.Register(ctx, &pb.RegisterRequest{
-		Username: "petya",
-		Email:    "petyanagibator@example.com",
-		Password: "qwe123",
-	})
+	// registerResp, err := client.Register(ctx, &pb.RegisterRequest{
+	// 	Username: "petya",
+	// 	Email:    "petyanagibator@example.com",
+	// 	Password: "qwe123",
+	// })
 
-	if err != nil {
-		log.Fatalf("Не удалось получить ответ на Register Request: %v", err)
-	}
+	// if err != nil {
+	// 	log.Fatalf("Не удалось получить ответ на Register Request: %v", err)
+	// }
 
-	log.Printf("Register Response: userID=%v", registerResp.UserID)
+	// log.Printf("Register Response: userID=%v", registerResp.UserID)
 
 	loginResp, err := client.Login(ctx, &pb.LoginRequest{
 		Username: "petya",

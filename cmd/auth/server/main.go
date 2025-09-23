@@ -60,9 +60,7 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 		fmt.Printf("DEBUG Login: пароль при вводе = %s\n", req.Password)
 		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
 	}
-	if err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(req.Password)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
-	}
+
 	token, err := auth.GenerateToken(existingUser.ID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "ошибка генерации токена:%v", err)
@@ -70,6 +68,20 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 	return &pb.LoginResponse{
 		Token: token,
 	}, nil
+}
+
+func (s *AuthServer) Shorten(ctx context.Context, req *pb.ShortenRequest) (*pb.ShortenResponse, error) {
+	userID, err := auth.ParseToken(req.Token)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "невалидный токен: %v", err)
+	}
+
+	shortCode, err := s.auth.URLService.Shorten(ctx, userID, req.Url)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "ошибка сокращения: %v", err)
+	}
+	shortURL := fmt.Sprintf("http://localhost:8080/%s", shortCode)
+	return &pb.ShortenResponse{ShortUrl: shortURL}, nil
 }
 
 func main() {

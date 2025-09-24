@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 33tangoqwe
+      POSTGRES_DB: urlshortener
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  migrate:
+    image: postgres:15
+    depends_on:
+      - db
+    volumes:
+      - ./migrations:/migrations
+    environment:
+      PGPASSWORD: 33tangoqwe
+    entrypoint:
+      [
+        "sh",
+        "-c",
+        "sleep 2; psql -h db -U postgres -d urlshortener -f /migrations/001_init.sql",
+      ]
+
+  server:
+    build:
+      context: .
+      dockerfile: ./cmd/auth/server/Dockerfile
+    depends_on:
+      - db
+    environment:
+      DB_URL: postgres://postgres:33tangoqwe@db:5432/urlshortener?sslmode=disable
+      JWT_SECRET: "change-me"
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./:/src
+
+volumes:
+  db_data:

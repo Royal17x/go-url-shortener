@@ -93,9 +93,6 @@ func (s *URLServer) ResolveURL(ctx context.Context, req *pb.ResolveURLRequest) (
 
 func main() {
 	dsn := os.Getenv("DB_URL")
-	if dsn == "" {
-		dsn = "postgres://postgres:33tangoqwe@localhost:5432/urlshortener?sslmode=disable"
-	}
 
 	store, err := storage.NewDB(dsn)
 	if err != nil {

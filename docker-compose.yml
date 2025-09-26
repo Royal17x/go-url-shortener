@@ -1,52 +1,47 @@
 services:
   db:
     image: postgres:15
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: urlshortener
+    restart: always
+    env_file: .env
     ports:
       - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d urlshortener"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile.migrate
+    image: migrate/migrate:v4.15.2
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - .env
     command:
       [
         "-path",
         "/migrations",
         "-database",
-        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
+        "postgres://postgres:${POSTGRES_PASSWORD}@db:5432/urlshortener?sslmode=disable",
         "up",
       ]
+    volumes:
+      - ./migrations:/migrations
 
   server:
     build:
       context: .
-      dockerfile: cmd/auth/server/Dockerfile
+      dockerfile: Dockerfile
     depends_on:
       db:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
-    env_file:
-      - .env
     ports:
       - "50051:50051"
-    restart: on-failure
+    env_file:
+      - .env
 
 volumes:
   db_data:

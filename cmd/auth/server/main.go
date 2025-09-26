@@ -17,6 +17,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -26,7 +27,7 @@ type AuthServer struct {
 }
 
 type URLServer struct {
-	pb.UnimplementedAuthServiceServer
+	pb.UnimplementedURLServiceServer
 	urlService *service.URLService
 }
 
@@ -103,7 +104,8 @@ func main() {
 	urlService := service.NewURLService(store)
 	grpcServer := grpc.NewServer()
 	pb.RegisterAuthServiceServer(grpcServer, &AuthServer{auth: authService})
-	pb.RegisterAuthServiceServer(grpcServer, &URLServer{urlService: urlService})
+	pb.RegisterURLServiceServer(grpcServer, &URLServer{urlService: urlService})
+	reflection.Register(grpcServer)
 	listener, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("Ошибка в создании listener:%v", err)

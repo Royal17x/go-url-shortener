@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/Royal17x/go-url-shortener/internal/pb"
@@ -11,7 +12,11 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	serverAddr := os.Getenv("GRPC_SERVER")
+	if serverAddr == "" {
+		serverAddr = "host.docker.internal:50051"
+	}
+	conn, err := grpc.Dial(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Не удалось подключиться к серверу: %v", err)
 	}
@@ -23,21 +28,20 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// registerResp, err := client.Register(ctx, &pb.RegisterRequest{
-	// 	Username: "petya",
-	// 	Email:    "petyanagibator@example.com",
-	// 	Password: "qwe123",
-	// })
+	registerResp, err := client.Register(ctx, &pb.RegisterRequest{
+		Username: "vasyan",
+		Email:    "vasyannagibator@example.com",
+		Password: "qwe123",
+	})
 
-	// if err != nil {
-	// 	log.Fatalf("Не удалось получить ответ на Register Request: %v", err)
-	// }
-
-	// log.Printf("Register Response: userID=%v", registerResp.UserID)
-
+	if err != nil {
+		log.Printf("register не удался: %v", err)
+	} else {
+		log.Printf("register Response: userID=%v", registerResp.UserID)
+	}
 	loginResp, err := client.Login(ctx, &pb.LoginRequest{
-		Username: "petya",
-		Email:    "petyanagibator@example.com",
+		Username: "vasyan",
+		Email:    "vasyannagibator@example.com",
 		Password: "qwe123",
 	})
 
